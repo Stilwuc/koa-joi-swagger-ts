@@ -38,7 +38,6 @@ export interface ISwagger {
       url: string;
     }
   };
-  host?: string;
   basePath?: string;
   tags?: Array<{
     name: string;
@@ -48,7 +47,6 @@ export interface ISwagger {
       url: string;
     }
   }>;
-  schemes: string[];
   paths: {};
   definitions: {};
 }
@@ -68,13 +66,11 @@ export interface IPath {
 export const DEFAULT_SWAGGER: ISwagger = {
   basePath: "/v1/api",
   definitions: {},
-  host: "localhost:3002",
   info: {
     title: "Koa-Joi-Swagger-TS server",
     version: "1.0.0"
   },
   paths: {},
-  schemes: ["http"],
   swagger: "2.0"
 };
 
@@ -192,7 +188,7 @@ export class KJSRouter {
     this._router.get(url, koaSwagger({
       routePrefix: false,
       swaggerOptions: {
-        url: this._swagger.schemes[FIRST_SCHEMA] + "://" + this._swagger.host + this._swaggerFileName
+        url: this._swaggerFileName
       }
     }));
   }
