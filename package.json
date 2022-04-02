@@ -1,5 +1,5 @@
 {
-  "name": "koa-joi-swagger-ts",
+  "name": "@stilwuc/koa-joi-swagger-ts",
   "version": "1.2.2",
   "description": "Router with koa, joi and swagger on typescript",
   "keywords": [
@@ -17,7 +17,8 @@
   "scripts": {
     "build": "tsc --declaration",
     "test": "jest --ci --coverage --no-cache",
-    "prepare": "npm run build"
+    "prepare": "npm run build",
+    "publish": "npm publish --access=public"
   },
   "repository": {
     "type": "git",
