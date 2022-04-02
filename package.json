@@ -1,6 +1,6 @@
 {
   "name": "@stilwuc/koa-joi-swagger-ts",
-  "version": "1.2.2",
+  "version": "2.2.2",
   "description": "Router with koa, joi and swagger on typescript",
   "keywords": [
     "koa",
