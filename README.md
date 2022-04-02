@@ -5,7 +5,7 @@
 
 ### How to use
 
-    npm install koa-joi-swagger-ts --save
+    npm install @stilwuc/koa-joi-swagger-ts --save
     
 ## Documentation
 
