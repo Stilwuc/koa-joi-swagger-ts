@@ -1,6 +1,4 @@
-[![npm](https://img.shields.io/npm/v/koa-joi-swagger-ts.svg?logo=npm)](https://www.npmjs.com/package/koa-joi-swagger-ts)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/bff7f599655549b394ecc9eae08023f7)](https://www.codacy.com/app/DragFAQ/koa-joi-swagger-ts?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=DragFAQ/koa-joi-swagger-ts&amp;utm_campaign=Badge_Grade)
-[![Build Status](https://travis-ci.org/DragFAQ/koa-joi-swagger-ts.svg?branch=master)](https://travis-ci.org/DragFAQ/koa-joi-swagger-ts)
+
 ## Koa-Joi-Swagger-TS
 
 ### How to use
