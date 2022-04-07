@@ -11,7 +11,7 @@ describe("Parameter", () => {
 
   it(` BaseController's index method [ parameter {version} ]'s description should be "version"`, () => {
 
-    expect(BaseController[Tags.tagParameter].get("index").get("version").schema._description).toBe("version");
+    expect(BaseController[Tags.tagParameter].get("index").get("version").schema._flags.description).toBe("version");
 
   });
 
@@ -29,7 +29,7 @@ describe("Parameter", () => {
 
   it(` UserController's doPost method [ parameter {user} ]'s description should be "user"`, () => {
 
-    expect(UserController[Tags.tagParameter].get("doPost").get("user").schema._description).toBe("user");
+    expect(UserController[Tags.tagParameter].get("doPost").get("user").schema._flags.description).toBe("user");
 
   });
 
@@ -47,7 +47,7 @@ describe("Parameter", () => {
 
   it(` UserController's doDelete method [ parameter {uid} ]'s description should be "userID"`, () => {
 
-    expect(UserController[Tags.tagParameter].get("doDelete").get("uid").schema._description).toBe("userID");
+    expect(UserController[Tags.tagParameter].get("doDelete").get("uid").schema._flags.description).toBe("userID");
 
   });
 
@@ -65,7 +65,7 @@ describe("Parameter", () => {
 
   it(` UserController's doPut method [ parameter {token} ]'s description should be "token"`, () => {
 
-    expect(UserController[Tags.tagParameter].get("doPut").get("token").schema._description).toBe("token");
+    expect(UserController[Tags.tagParameter].get("doPut").get("token").schema._flags.description).toBe("token");
 
   });
 

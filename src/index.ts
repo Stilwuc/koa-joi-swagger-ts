@@ -1,7 +1,7 @@
 import * as _ from "lodash";
 import Router from "koa-router";
 
-import koaSwagger from "koa2-swagger-ui";
+import { koaSwagger } from "koa2-swagger-ui";
 
 export * from "./controller";
 

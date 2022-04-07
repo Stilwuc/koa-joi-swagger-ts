@@ -1,8 +1,8 @@
 import { ISchema, toJoi, toSwagger } from "./ischema";
-import * as joi from "joi";
+import joi from "joi";
 import { registerMethod, registerMiddleware } from "./utils";
 import {HTTPStatusCodes, IPath, Tags} from "./index";
-import { BaseContext } from "koa";
+import { DefaultContext } from "koa";
 
 const PARAMETERS: Map<Function, Map<string, Map<string, IParameter>>> = new Map();
 
@@ -19,10 +19,7 @@ export enum ENUM_PARAM_IN {
   formData
 }
 
-export const parameter = (name: string, schema?: ISchema | joi.Schema, paramIn?: ENUM_PARAM_IN): MethodDecorator => (target: {}, key: string): void => {
-  if (!paramIn) {
-    paramIn = ENUM_PARAM_IN.query;
-  }
+export const parameter = (name: string, schema?: ISchema | joi.Schema, paramIn = ENUM_PARAM_IN.query): MethodDecorator => (target: {}, key: string): void => {
   if (!PARAMETERS.has(target.constructor)) {
     PARAMETERS.set(target.constructor, new Map());
   }
@@ -46,7 +43,7 @@ export const parameter = (name: string, schema?: ISchema | joi.Schema, paramIn?:
     }, {required: paramIn === ENUM_PARAM_IN.path && true}, ENUM_PARAM_IN.body === paramIn ? {schema} : schema));
   });
 
-  registerMiddleware(target, key, async (ctx: BaseContext, next: Function) => {
+  registerMiddleware(target, key, async (ctx: DefaultContext, next: Function) => {
     const schemas = PARAMETERS.get(target.constructor).get(key);
     const tempSchema = {params: {}, body: {}, query: {}, formData: {}};
     let body = ctx.request.body;
@@ -75,12 +72,12 @@ export const parameter = (name: string, schema?: ISchema | joi.Schema, paramIn?:
       formData = body;
       body = {};
     }
-    const {error, value} = joi.validate({
+    const {error, value} = joi.object(target).validate({
       body,
       formData,
       params: ctx.params,
       query: ctx.request.query
-    }, tempSchema);
+    });
     if (error) {
       return ctx.throw(HTTPStatusCodes.badRequest, JSON.stringify({
         code: HTTPStatusCodes.badRequest,
@@ -92,7 +89,7 @@ export const parameter = (name: string, schema?: ISchema | joi.Schema, paramIn?:
       "multipart/form-data"
     ]) && value.formData || value.body;
     ctx.request.query = value.query;
-    return await next();
+    return next();
   });
 
   PARAMETERS.get(target.constructor).get(key).set(name, {in: paramIn, schema: toJoi(schema)});

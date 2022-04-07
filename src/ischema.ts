@@ -12,7 +12,7 @@ export interface ISchema {
 }
 
 export const toSwagger = (iSchema: ISchema | joi.Schema): any => {
-  if (iSchema["isJoi"]) {
+  if (joi.isSchema(iSchema)) {
     return j2s(iSchema as ObjectSchema).swagger;
   }
   let items;
@@ -41,7 +41,7 @@ export const toSchema = (Definition) => {
 };
 
 export const toJoi = (iSchema: ISchema | joi.Schema): joi.Schema | ISchema => {
-  if (iSchema["isJoi"]) {
+  if (joi.isSchema(iSchema)) {
     return iSchema;
   }
   const type = iSchema["type"] || "object";
