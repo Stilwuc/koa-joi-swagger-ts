@@ -8,7 +8,7 @@ const PARAMETERS: Map<Function, Map<string, Map<string, IParameter>>> = new Map(
 
 export interface IParameter {
   in: ENUM_PARAM_IN;
-  schema: joi.Schema | ISchema | Function;
+  schema: joi.Schema | ISchema;
 }
 
 export enum ENUM_PARAM_IN {
@@ -19,7 +19,7 @@ export enum ENUM_PARAM_IN {
   formData
 }
 
-export const parameter = (name: string, schema?: ISchema | joi.Schema | Function, paramIn = ENUM_PARAM_IN.query): MethodDecorator => (target: {}, key: string): void => {
+export const parameter = (name: string, schema?: ISchema | joi.Schema, paramIn = ENUM_PARAM_IN.query): MethodDecorator => (target: {}, key: string): void => {
   if (!PARAMETERS.has(target.constructor)) {
     PARAMETERS.set(target.constructor, new Map());
   }
