@@ -1,7 +1,7 @@
 import * as joi from "joi";
 
 import j2s from "joi-to-swagger";
-import { ObjectSchema } from "joi";
+import {isSchema, ObjectSchema} from "joi";
 import {Tags} from "./index";
 
 export interface ISchema {
@@ -11,12 +11,12 @@ export interface ISchema {
   $ref?: Function;
 }
 
-export const toSwagger = (iSchema: ISchema | joi.Schema): any => {
+export const toSwagger = (iSchema: ISchema | joi.Schema | Function): any => {
   if (joi.isSchema(iSchema)) {
     return j2s(iSchema as ObjectSchema).swagger;
   }
   let items;
-  let $ref: any = iSchema["$ref"];
+  let $ref: any = iSchema["$ref"] || isSchema;
   let description;
   if (iSchema["items"]) {
     items = toSwagger(iSchema["items"]);
@@ -40,13 +40,13 @@ export const toSchema = (Definition) => {
   return j2s(joi.object().keys(key)).swagger;
 };
 
-export const toJoi = (iSchema: ISchema | joi.Schema): joi.Schema | ISchema => {
+export const toJoi = (iSchema: ISchema | joi.Schema | Function): joi.Schema | ISchema => {
   if (joi.isSchema(iSchema)) {
     return iSchema;
   }
   const type = iSchema["type"] || "object";
   let schema = null;
-  const Ref: any = iSchema["$ref"] || (iSchema["items"] && iSchema["items"].$ref);
+  const Ref: any = iSchema["$ref"] || (iSchema["items"] && iSchema["items"].$ref) || iSchema;
   let keys = {};
   if (Ref) {
     const ref = new Ref();
