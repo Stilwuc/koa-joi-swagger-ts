@@ -1,36 +1,34 @@
-import { ISchema, toJoi, toSwagger } from './ischema';
 import * as joi from 'joi';
+import { BaseContext } from 'koa';
+import { ISchema, toJoi, toSwagger } from './ischema';
 import { registerMethod, registerMiddleware } from './utils';
 import { HTTPStatusCodes, IPath, Tags } from './index';
-import { BaseContext } from 'koa';
 
-const RESPONSES: Map<Function, Map<string, Map<number, ISchema | joi.Schema>>> = new Map();
-
-export const DEFAULT_RESPONSE: joi.Schema = joi.string().default('');
+const RESPONSES: Map<Function, Map<string, Map<number, joi.Schema>>> = new Map();
 
 export const response =
-  (code: number, schema?: ISchema | joi.Schema): MethodDecorator =>
+  (code: number, schema: joi.Schema = joi.string().default('')): MethodDecorator =>
   (target: {}, key: string): void => {
-    if (!schema) {
-      schema = DEFAULT_RESPONSE;
-    }
     if (!RESPONSES.has(target.constructor)) {
       RESPONSES.set(target.constructor, new Map());
     }
+
     if (!RESPONSES.get(target.constructor).has(key)) {
       RESPONSES.get(target.constructor).set(key, new Map());
     }
+
     registerMethod(target, key, (router: IPath): void => {
       if (!router.responses) {
         router.responses = {};
       }
-      schema = toSwagger(schema);
+
+      const swaggerSchema = toSwagger(schema);
       let description = '';
-      if (schema['description']) {
-        description = schema['description'];
-        delete schema['description'];
+      if (swaggerSchema.description) {
+        description = swaggerSchema.description;
+        delete swaggerSchema.description;
       }
-      router.responses[code] = Object.assign({ description }, { schema });
+      router.responses[code] = { description, schema: swaggerSchema };
     });
 
     registerMiddleware(target, key, async (ctx: BaseContext, next: Function): Promise<void> => {
@@ -48,6 +46,6 @@ export const response =
       }
     });
 
-    RESPONSES.get(target.constructor).get(key).set(code, toJoi(schema));
+    RESPONSES.get(target.constructor).get(key).set(code, schema);
     target[Tags.tagResponse] = target.constructor[Tags.tagResponse] = RESPONSES.get(target.constructor);
   };

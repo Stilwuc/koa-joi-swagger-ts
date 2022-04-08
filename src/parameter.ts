@@ -1,8 +1,8 @@
-import { ISchema, toJoi, toSwagger } from './ischema';
 import joi from 'joi';
+import { DefaultContext } from 'koa';
+import { ISchema, toJoi, toSwagger } from './ischema';
 import { registerMethod, registerMiddleware } from './utils';
 import { HTTPStatusCodes, IPath, Tags } from './index';
-import { DefaultContext } from 'koa';
 
 const PARAMETERS: Map<Function, Map<string, Map<string, IParameter>>> = new Map();
 
@@ -20,7 +20,7 @@ export enum ENUM_PARAM_IN {
 }
 
 export const parameter =
-  (name: string, schema?: ISchema | joi.Schema, paramIn = ENUM_PARAM_IN.query): MethodDecorator =>
+  (name: string, schema?: joi.Schema, paramIn = ENUM_PARAM_IN.query): MethodDecorator =>
   (target: {}, key: string): void => {
     if (!PARAMETERS.has(target.constructor)) {
       PARAMETERS.set(target.constructor, new Map());
@@ -28,27 +28,24 @@ export const parameter =
     if (!PARAMETERS.get(target.constructor).has(key)) {
       PARAMETERS.get(target.constructor).set(key, new Map());
     }
+    console.log('awd');
     registerMethod(target, key, (router: IPath) => {
       if (!router.parameters) {
         router.parameters = [];
       }
-      schema = toSwagger(schema);
+      const swaggerSchema = toSwagger(schema);
       let description = '';
-      if (schema['description']) {
-        description = schema['description'];
-        delete schema['description'];
+      if (swaggerSchema.description) {
+        description = swaggerSchema.description;
+        delete swaggerSchema.description;
       }
-      router.parameters.push(
-        Object.assign(
-          {
-            description,
-            in: ENUM_PARAM_IN[paramIn],
-            name,
-          },
-          { required: paramIn === ENUM_PARAM_IN.path && true },
-          ENUM_PARAM_IN.body === paramIn ? { schema } : schema,
-        ),
-      );
+      router.parameters.push({
+        description,
+        in: ENUM_PARAM_IN[paramIn],
+        name,
+        required: paramIn === ENUM_PARAM_IN.path && true,
+        ...(ENUM_PARAM_IN.body === paramIn ? { schema: swaggerSchema } : swaggerSchema),
+      });
     });
 
     registerMiddleware(target, key, async (ctx: DefaultContext, next: Function) => {

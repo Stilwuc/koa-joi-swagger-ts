@@ -11,27 +11,32 @@ export interface ISchema {
   $ref?: Function;
 }
 
-export const toSwagger = (iSchema: ISchema | joi.Schema): any => {
-  if (joi.isSchema(iSchema)) {
-    return j2s(iSchema as ObjectSchema).swagger;
+export const toSwagger = (schema: joi.Schema): any => {
+  const swaggerSchema = j2s(schema).swagger;
+
+  if (schema.type === 'array') {
+    const itemSchema = schema.$_terms.items[0];
+    if (!itemSchema._flags.id) return swaggerSchema;
+
+    return {
+      ...swaggerSchema,
+      items: { ...swaggerSchema.items, $ref: `#/definitions/${itemSchema._flags.id}` },
+      description: schema._flags.description || '',
+      required: schema._flags.required || false,
+    };
   }
-  let items;
-  let $ref: any = iSchema['$ref'];
-  let description;
-  if (iSchema['items']) {
-    items = toSwagger(iSchema['items']);
-    $ref = items['$ref'];
+
+  if (schema.type === 'object') {
+    if (!schema._flags.id) return swaggerSchema;
+
+    return {
+      $ref: `#/definitions/${schema._flags.id}`,
+      description: schema._flags.description || '',
+      required: schema._flags.required || false,
+    };
   }
-  if ($ref && $ref[Tags.tagDefinitionName]) {
-    description = $ref[Tags.tagDefinitionDescription];
-    $ref = '#/definitions/' + $ref[Tags.tagDefinitionName];
-    return { $ref, description };
-  }
-  let result = { items, type: iSchema['type'] || 'object', $ref, description };
-  if (iSchema['required']) {
-    result = Object.assign(result, { required: iSchema['required'] });
-  }
-  return result;
+
+  return swaggerSchema;
 };
 
 export const toSchema = (joiSchema: ObjectSchema) => {
@@ -42,13 +47,13 @@ export const toJoi = (iSchema: ISchema | joi.Schema): joi.Schema | ISchema => {
   if (joi.isSchema(iSchema)) {
     return iSchema;
   }
-  const type = iSchema['type'] || 'object';
+  const type = iSchema.type || 'object';
   let schema = null;
-  const Ref: any = iSchema['$ref'] || (iSchema['items'] && iSchema['items'].$ref);
+  const Ref: any = iSchema.$ref || (iSchema.items && iSchema.items.$ref);
   let keys = {};
   if (Ref) {
     const ref = new Ref();
-    keys = Object.assign({}, ref);
+    keys = { ...ref };
   }
 
   if (joi[type]) {
@@ -57,7 +62,7 @@ export const toJoi = (iSchema: ISchema | joi.Schema): joi.Schema | ISchema => {
   if (schema && Ref && Ref[Tags.tagDefinitionDescription]) {
     schema = schema.description(Ref[Tags.tagDefinitionDescription]);
   }
-  if (schema && iSchema['required']) {
+  if (schema && iSchema.required) {
     schema = schema.required();
   }
   switch (type) {
@@ -66,7 +71,7 @@ export const toJoi = (iSchema: ISchema | joi.Schema): joi.Schema | ISchema => {
     case 'array':
       return schema ? schema.items(keys) : null;
     case 'file':
-      return iSchema['required'] ? joi.object().required() : joi.object();
+      return iSchema.required ? joi.object().required() : joi.object();
     default:
       return schema;
   }
