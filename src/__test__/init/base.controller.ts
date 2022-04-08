@@ -3,7 +3,7 @@ import * as joi from 'joi';
 
 @controller('/v3/api')
 export class BaseController {
-  @get('/')
+  @get()
   @parameter('version', joi.string().description('version'))
   @summary('BaseController[index]')
   @response(HTTPStatusCodes.success)

@@ -34,13 +34,15 @@ const METHODS: Map<Function, Map<string, Map<string, IMethod>>> = new Map();
 export const method =
   (methodString?: string, path?: string): MethodDecorator =>
   (target: {}, key: string): void => {
+    const urlPath = path || '/'
+
     if (!METHODS.has(target.constructor)) {
       METHODS.set(target.constructor, new Map());
     }
-    if (!METHODS.get(target.constructor).has(path)) {
-      METHODS.get(target.constructor).set(path, new Map());
+    if (!METHODS.get(target.constructor).has(urlPath)) {
+      METHODS.get(target.constructor).set(urlPath, new Map());
     }
-    METHODS.get(target.constructor).get(path).set(methodString, { key, handle: target[key] });
+    METHODS.get(target.constructor).get(urlPath).set(methodString, { key, handle: target[key] });
     target[Tags.tagMethod] = target.constructor[Tags.tagMethod] = METHODS.get(target.constructor);
   };
 
