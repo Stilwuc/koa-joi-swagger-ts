@@ -64,10 +64,10 @@ export interface IPath {
 }
 
 export const DEFAULT_SWAGGER: ISwagger = {
-  basePath: "/v1/api",
+  basePath: "",
   definitions: {},
   info: {
-    title: "Koa-Joi-Swagger-TS server",
+    title: "Swagger UI",
     version: "1.0.0"
   },
   paths: {},
@@ -98,11 +98,11 @@ export enum Tags {
 }
 
 export const DEFAULT_PATH: IPath = {
-  consumes: ["application/json", "multipart/form-data", "application/x-www-form-urlencoded"],
+  consumes: ["application/json"],
   description: "",
   operationId: undefined,
-  produces: ["application/json", "multipart/form-data", "application/x-www-form-urlencoded"],
-  responses: {[HTTPStatusCodes.success]: {description: "Success"}},
+  produces: ["application/json"],
+  responses: {},
   security: [],
   summary: "",
   tags: []
@@ -174,7 +174,7 @@ export class KJSRouter {
   }
 
   public setSwaggerFile(fileName: string): void {
-    this._swaggerFileName = this._swagger.basePath + "/" + fileName;
+    this._swaggerFileName = this._swagger.basePath ? this._swagger.basePath + "/" + fileName : '/' + fileName
     this._router.get(this._swaggerFileName, (ctx, next) => {
       ctx.body = JSON.stringify(this._swagger);
     });
