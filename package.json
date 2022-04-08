@@ -23,7 +23,7 @@
     "type": "git",
     "url": "git@github.com:Stilwuc/koa-joi-swagger-ts.git"
   },
-  "author": "Stilwuc",
+  "author": "stilwuc",
   "license": "ISC",
   "dependencies": {
     "joi": "17.6.0",
