@@ -28,7 +28,6 @@ export const parameter =
     if (!PARAMETERS.get(target.constructor).has(key)) {
       PARAMETERS.get(target.constructor).set(key, new Map());
     }
-    console.log('awd');
     registerMethod(target, key, (router: IPath) => {
       if (!router.parameters) {
         router.parameters = [];
