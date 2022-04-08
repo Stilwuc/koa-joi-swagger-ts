@@ -34,10 +34,8 @@ export const toSwagger = (iSchema: ISchema | joi.Schema): any => {
   return result;
 };
 
-export const toSchema = (Definition) => {
-  let key = {};
-  key = Object.assign(key, new Definition());
-  return j2s(joi.object().keys(key)).swagger;
+export const toSchema = (joiSchema: ObjectSchema) => {
+  return j2s(joiSchema).swagger;
 };
 
 export const toJoi = (iSchema: ISchema | joi.Schema): joi.Schema | ISchema => {

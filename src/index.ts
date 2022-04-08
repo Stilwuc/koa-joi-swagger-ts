@@ -3,10 +3,9 @@ import Router from 'koa-router';
 
 import { koaSwagger } from 'koa2-swagger-ui';
 import { ObjectSchema } from 'joi';
+import { toSchema } from './ischema';
 
 export * from './controller';
-
-export * from './definition';
 
 export * from './description';
 
@@ -160,23 +159,13 @@ export class KJSRouter {
     }
   }
 
-  public loadDefinition(Definition: any | []): void {
-    const processDefinition = (definition: any) => {
-      if (definition[Tags.tagDefinitionName]) {
-        const globalMethods = definition[Tags.tagGlobalMethod] || [];
-        globalMethods.forEach((deal) => {
-          deal(this._swagger);
-        });
-      }
-    };
-
-    if (Array.isArray(Definition)) {
-      Definition.forEach((item) => {
-        processDefinition(item);
-      });
-    } else {
-      processDefinition(Definition);
+  public addDefinition(objectDefinition: ObjectSchema): void {
+    const schemaName = objectDefinition._flags.id;
+    if (!schemaName) {
+      throw new Error('Schema doesnt have a joi id. Please use .id(string) on schema definition');
     }
+
+    this._swagger.definitions[schemaName] = toSchema(objectDefinition);
   }
 
   public setSwaggerFile(fileName: string): void {

@@ -20,7 +20,7 @@ import { BaseController } from './base.controller';
 export class UserController extends BaseController {
   @get('/')
   @parameter('userName', joi.string().description('username'))
-  @response(HTTPStatusCodes.success, { $ref: UserSchema })
+  @response(HTTPStatusCodes.success, UserSchema)
   @response(HTTPStatusCodes.created)
   @tag('User')
   public doGet(): void {}
