@@ -1,4 +1,4 @@
-import {Tags} from "../index";
+import { Tags } from '../index';
 
 const MIDDLE_METHODS: Map<Function, Map<string, Function[]>> = new Map();
 
