@@ -34,7 +34,7 @@ const METHODS: Map<Function, Map<string, Map<string, IMethod>>> = new Map();
 export const method =
   (methodString?: string, path?: string): MethodDecorator =>
   (target: {}, key: string): void => {
-    const urlPath = path || '/'
+    const urlPath = path || '';
 
     if (!METHODS.has(target.constructor)) {
       METHODS.set(target.constructor, new Map());
