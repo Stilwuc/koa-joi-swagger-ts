@@ -1,6 +1,6 @@
 import * as joi from 'joi';
 import { BaseContext } from 'koa';
-import { ISchema, toJoi, toSwagger } from './ischema';
+import { toSwagger } from './ischema';
 import { registerMethod, registerMiddleware } from './utils';
 import { HTTPStatusCodes, IPath, Tags } from './index';
 
@@ -33,10 +33,14 @@ export const response =
 
     registerMiddleware(target, key, async (ctx: BaseContext, next: Function): Promise<void> => {
       await next();
+
+      let responseBody = ctx.body;
+      try {
+        responseBody = JSON.parse(JSON.stringify(ctx.body));
+      } catch {}
+
       if (RESPONSES.get(target.constructor).get(key).has(ctx.status)) {
-        const { error, value } = joi
-          .object(RESPONSES.get(target.constructor).get(key).get(ctx.status))
-          .validate(ctx.body);
+        const { error, value } = RESPONSES.get(target.constructor).get(key).get(ctx.status).validate(responseBody);
         if (error) {
           ctx.body = { code: HTTPStatusCodes.internalServerError, message: error.message };
           ctx.status = HTTPStatusCodes.internalServerError;
