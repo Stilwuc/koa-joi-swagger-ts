@@ -108,8 +108,6 @@ export const DEFAULT_PATH: IPath = {
   tags: [],
 };
 
-const FIRST_SCHEMA = 0;
-
 export class KJSRouter {
   private readonly _swagger: ISwagger;
 
@@ -119,6 +117,7 @@ export class KJSRouter {
 
   constructor(swagger: ISwagger = DEFAULT_SWAGGER) {
     this._swagger = swagger;
+    if (swagger.basePath) this._router.prefix(swagger.basePath);
   }
 
   public loadController(Controller: any, decorator: Function = null): void {
@@ -169,7 +168,7 @@ export class KJSRouter {
   }
 
   public setSwaggerFile(fileName: string): void {
-    this._swaggerFileName = this._swagger.basePath ? this._swagger.basePath + '/' + fileName : '/' + fileName;
+    this._swaggerFileName = '/' + fileName;
     this._router.get(this._swaggerFileName, (ctx, next) => {
       ctx.body = JSON.stringify(this._swagger);
     });
