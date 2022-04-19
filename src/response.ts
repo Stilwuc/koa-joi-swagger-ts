@@ -42,8 +42,7 @@ export const response =
       if (RESPONSES.get(target.constructor).get(key).has(ctx.status)) {
         const { error, value } = RESPONSES.get(target.constructor).get(key).get(ctx.status).validate(responseBody);
         if (error) {
-          ctx.body = { code: HTTPStatusCodes.internalServerError, message: error.message };
-          ctx.status = HTTPStatusCodes.internalServerError;
+          ctx.throw(error.message, HTTPStatusCodes.internalServerError);
           return;
         }
         ctx.body = value;
