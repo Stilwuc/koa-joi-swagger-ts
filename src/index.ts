@@ -121,47 +121,6 @@ function getFullFilePathWithoutExtension(file: string): string {
   return join(parsedFile.dir, parsedFile.name);
 }
 
-const autoLoadSchemas = async (pathPattern: string) => {
-  return (
-    await Promise.all(
-      glob
-        .sync(pathPattern)
-        .map(getFullFilePathWithoutExtension)
-        .map(async (fullPath) => {
-          const module = await import(fullPath);
-
-          return Object.values(module).filter((moduleValue) => joi.isSchema(moduleValue));
-        }),
-    )
-  )
-    .flat()
-    .filter(Boolean);
-};
-
-const autoLoadControllers = async (pathPattern: string) => {
-  return Promise.all(
-    glob
-      .sync(pathPattern)
-      .map(getFullFilePathWithoutExtension)
-      .map(async (fullPath) => {
-        const module = await import(fullPath);
-        const fileName = basename(fullPath);
-
-        if (!module.default) {
-          console.warn(`No default export defined for file "${fileName}"`);
-          return;
-        }
-        const isControllerClass = Object.keys(module.default).some((key) => key === 'Controller');
-        if (!isControllerClass) return;
-
-        console.info(`controller added: ${module.default.name}`);
-
-        return module.default;
-      })
-      .filter(Boolean),
-  );
-};
-
 export class KJSRouter {
   private readonly _swagger: ISwagger;
 
@@ -173,9 +132,54 @@ export class KJSRouter {
     this._swagger = swagger;
     if (swagger.basePath) this._router.prefix(swagger.basePath);
 
-    if (swagger.autoImportControllers) autoLoadControllers(swagger.autoImportControllers.globPath);
-    if (swagger.autoImportSchemas) autoLoadSchemas(swagger.autoImportSchemas.globPath);
+    if (swagger.autoImportControllers) this.autoLoadControllers(swagger.autoImportControllers.globPath);
+    if (swagger.autoImportSchemas) this.autoLoadSchemas(swagger.autoImportSchemas.globPath);
   }
+
+  private autoLoadSchemas = async (pathPattern: string) => {
+    const allControllers = (
+      await Promise.all(
+        glob
+          .sync(pathPattern)
+          .map(getFullFilePathWithoutExtension)
+          .map(async (fullPath) => {
+            const module = await import(fullPath);
+
+            return Object.values(module).filter((moduleValue) => joi.isSchema(moduleValue));
+          }),
+      )
+    )
+      .flat()
+      .filter(Boolean);
+
+    allControllers.forEach((controller) => this.loadController(controller));
+  };
+
+  private autoLoadControllers = async (pathPattern: string) => {
+    const allSchemas = await Promise.all(
+      glob
+        .sync(pathPattern)
+        .map(getFullFilePathWithoutExtension)
+        .map(async (fullPath) => {
+          const module = await import(fullPath);
+          const fileName = basename(fullPath);
+
+          if (!module.default) {
+            console.warn(`No default export defined for file "${fileName}"`);
+            return;
+          }
+          const isControllerClass = Object.keys(module.default).some((key) => key === 'Controller');
+          if (!isControllerClass) return;
+
+          console.info(`controller added: ${module.default.name}`);
+
+          return module.default;
+        })
+        .filter(Boolean),
+    );
+
+    allSchemas.forEach((schema) => this.addDefinition(schema));
+  };
 
   public loadController(Controller: any, decorator: Function = null): void {
     if (Controller[Tags.tagController]) {
