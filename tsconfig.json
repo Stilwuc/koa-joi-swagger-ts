@@ -3,7 +3,7 @@
     "outDir": "dist",
     "baseUrl": "src",
     "moduleResolution": "node",
-    "target": "es2018",
+    "target": "es2019",
     "module": "commonjs",
     "esModuleInterop": true,
     "sourceMap": true,

@@ -1,9 +1,11 @@
 import * as _ from 'lodash';
 import Router from 'koa-router';
+import glob from 'glob';
 
 import { koaSwagger } from 'koa2-swagger-ui';
-import { ObjectSchema } from 'joi';
+import joi, { ObjectSchema } from 'joi';
 import { toSchema } from './ischema';
+import { basename, join, parse } from 'path';
 
 export * from './controller';
 
@@ -47,6 +49,12 @@ export interface ISwagger {
       url: string;
     };
   }>;
+  autoImportControllers?: {
+    globPath: string;
+  };
+  autoImportSchemas?: {
+    globPath: string;
+  };
   paths: {};
   definitions: {};
 }
@@ -108,6 +116,52 @@ export const DEFAULT_PATH: IPath = {
   tags: [],
 };
 
+function getFullFilePathWithoutExtension(file: string): string {
+  const parsedFile = parse(file);
+  return join(parsedFile.dir, parsedFile.name);
+}
+
+const autoLoadSchemas = async (pathPattern: string) => {
+  return (
+    await Promise.all(
+      glob
+        .sync(pathPattern)
+        .map(getFullFilePathWithoutExtension)
+        .map(async (fullPath) => {
+          const module = await import(fullPath);
+
+          return Object.values(module).filter((moduleValue) => joi.isSchema(moduleValue));
+        }),
+    )
+  )
+    .flat()
+    .filter(Boolean);
+};
+
+const autoLoadControllers = async (pathPattern: string) => {
+  return Promise.all(
+    glob
+      .sync(pathPattern)
+      .map(getFullFilePathWithoutExtension)
+      .map(async (fullPath) => {
+        const module = await import(fullPath);
+        const fileName = basename(fullPath);
+
+        if (!module.default) {
+          console.warn(`No default export defined for file "${fileName}"`);
+          return;
+        }
+        const isControllerClass = Object.keys(module.default).some((key) => key === 'Controller');
+        if (!isControllerClass) return;
+
+        console.info(`controller added: ${module.default.name}`);
+
+        return module.default;
+      })
+      .filter(Boolean),
+  );
+};
+
 export class KJSRouter {
   private readonly _swagger: ISwagger;
 
@@ -118,6 +172,9 @@ export class KJSRouter {
   constructor(swagger: ISwagger = DEFAULT_SWAGGER) {
     this._swagger = swagger;
     if (swagger.basePath) this._router.prefix(swagger.basePath);
+
+    if (swagger.autoImportControllers) autoLoadControllers(swagger.autoImportControllers.globPath);
+    if (swagger.autoImportSchemas) autoLoadSchemas(swagger.autoImportSchemas.globPath);
   }
 
   public loadController(Controller: any, decorator: Function = null): void {
