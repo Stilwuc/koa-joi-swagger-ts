@@ -136,7 +136,7 @@ export class KJSRouter {
     if (swagger.autoImportSchemas) this.autoLoadSchemas(swagger.autoImportSchemas.globPath);
   }
 
-  private autoLoadSchemas = async (pathPattern: string) => {
+  private autoLoadControllers = async (pathPattern: string) => {
     const allControllers = (
       await Promise.all(
         glob
@@ -155,7 +155,7 @@ export class KJSRouter {
     allControllers.forEach((controller) => this.loadController(controller));
   };
 
-  private autoLoadControllers = async (pathPattern: string) => {
+  private autoLoadSchemas = async (pathPattern: string) => {
     const allSchemas = await Promise.all(
       glob
         .sync(pathPattern)
