@@ -225,7 +225,9 @@ export class KJSRouter {
       throw new Error('Schema doesnt have a joi id. Please use .id(string) on schema definition');
     }
 
-    this._swagger.definitions[schemaName] = toSchema(objectDefinition);
+    try {
+      this._swagger.definitions[schemaName] = toSchema(objectDefinition);
+    } catch (e) {}
   }
 
   public setSwaggerFile(fileName: string): void {
