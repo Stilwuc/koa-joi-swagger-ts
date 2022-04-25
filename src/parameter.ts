@@ -42,7 +42,7 @@ export const parameter =
         description,
         in: ENUM_PARAM_IN[paramIn],
         name,
-        required: paramIn === ENUM_PARAM_IN.path || !!schema._flags.required,
+        required: paramIn === ENUM_PARAM_IN.path || !!schema._flags.required || schema._flags.presence === 'required',
         ...(ENUM_PARAM_IN.body === paramIn ? { schema: swaggerSchema } : swaggerSchema),
       });
     });
